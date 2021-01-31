@@ -22,20 +22,34 @@ y_train = train_dataf['Survived']
 #Need to transfer String data to numeric: Sex, Embarked
 #Make fare into catagories and assign levels (eg. 1,2,3)
 #possibly create more relevant features from current fields?
+for i in range(len(train_dataf.index)):
+    if train_dataf.loc[i, 'Sex'] == 'male':
+        train_dataf.loc[i, 'Sex'] = 0
+    elif train_dataf.loc[i, 'Sex'] == 'female':
+        train_dataf.loc[i, 'Sex'] = 1
 
-train_dataf = train_dataf.drop(columns = ['Survived', 'Name', 'Ticket', 'Sex', 'Cabin', 'Embarked','Fare' ,'Age'])
-test_dataf = test_dataf.drop(columns = ['Name', 'Sex', 'Cabin', 'Embarked', 'Ticket', 'Age', 'Fare'])
+for i in range(len(test_dataf.index)):
+    if test_dataf.loc[i, 'Sex'] == 'male':
+        test_dataf.loc[i, 'Sex'] = 0
+    elif test_dataf.loc[i, 'Sex'] == 'female':
+        test_dataf.loc[i, 'Sex'] = 1
+        
+#Pandas syntax to do above in one line
+#train_dataf['Sex'] = train_dataf['Sex'].map({'female': 1, 'male': 0}).astype(int)
+
+train_dataf = train_dataf.drop(columns = ['Survived', 'Name', 'Ticket', 'Cabin', 'Embarked','Fare' ,'Age'])
+test_dataf = test_dataf.drop(columns = ['Name', 'Cabin', 'Embarked', 'Ticket', 'Age', 'Fare'])
 
 train_dataf.shape
 y_train.shape
 test_dataf.shape
 
 GNaiveBayes = GaussianNB()
-#GNaiveBayes.fit(train_dataf, y_train)
+GNaiveBayes.fit(train_dataf, y_train)
 y_prediction = GNaiveBayes.fit(train_dataf, y_train).predict(test_dataf)
 accuracyGNB = round(GNaiveBayes.score(train_dataf, y_train)*100, 2)
 print(accuracyGNB)
-#66.89
+#76.99
 
 #Cabin and Age are not complete data sets
 # Age missing ~270 values, Cabin missing ~ 700 values

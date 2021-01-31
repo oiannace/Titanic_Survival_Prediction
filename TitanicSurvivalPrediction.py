@@ -19,9 +19,10 @@ test_dataf = pd.read_csv('C:/Users/Ornello/Documents/PersonalProjects/TitanicSur
 #Remove Survived column from x axis training data
 y_train = train_dataf['Survived']
 
-#Need to transfer String data to numeric: Sex, Embarked
-#Make fare into catagories and assign levels (eg. 1,2,3)
-#possibly create more relevant features from current fields?
+#Need to create larger groupings for Age and Fare
+#Determine if the current fields show any correlation, if not possibly create more signifcant features
+
+
 for i in range(len(train_dataf.index)):
     if train_dataf.loc[i, 'Sex'] == 'male':
         train_dataf.loc[i, 'Sex'] = 0
@@ -37,19 +38,23 @@ for i in range(len(test_dataf.index)):
 #Pandas syntax to do above in one line
 #train_dataf['Sex'] = train_dataf['Sex'].map({'female': 1, 'male': 0}).astype(int)
 
-train_dataf = train_dataf.drop(columns = ['Survived', 'Name', 'Ticket', 'Cabin', 'Embarked','Fare' ,'Age'])
-test_dataf = test_dataf.drop(columns = ['Name', 'Cabin', 'Embarked', 'Ticket', 'Age', 'Fare'])
+#Fill missing values in Embarked field with most frequent occurence ('S")
+train_dataf['Embarked'] = train_dataf['Embarked'].fillna(train_dataf['Embarked'].mode()[0])
+test_dataf['Embarked'] = test_dataf['Embarked'].fillna(test_dataf['Embarked'].mode()[0])
 
-train_dataf.shape
-y_train.shape
-test_dataf.shape
+train_dataf['Embarked'] = train_dataf['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype(int)
+test_dataf['Embarked'] = test_dataf['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype(int)
+
+train_dataf = train_dataf.drop(columns = ['PassengerId', 'Survived', 'Name', 'Ticket', 'Cabin','Fare' ,'Age'])
+test_dataf = test_dataf.drop(columns = ['PassengerId','Name', 'Cabin', 'Ticket', 'Age', 'Fare'])
+
 
 GNaiveBayes = GaussianNB()
 GNaiveBayes.fit(train_dataf, y_train)
 y_prediction = GNaiveBayes.fit(train_dataf, y_train).predict(test_dataf)
 accuracyGNB = round(GNaiveBayes.score(train_dataf, y_train)*100, 2)
 print(accuracyGNB)
-#76.99
+#79.01
 
 #Cabin and Age are not complete data sets
 # Age missing ~270 values, Cabin missing ~ 700 values

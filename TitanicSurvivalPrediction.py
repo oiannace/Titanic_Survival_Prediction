@@ -6,11 +6,6 @@ Created on Wed Jan 27 09:03:54 2021
 """
 
 import pandas as pd
-import numpy as np
-import random as rnd
-
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 from sklearn.naive_bayes import GaussianNB
 
@@ -19,7 +14,7 @@ test_dataf = pd.read_csv('C:/Users/Ornello/Documents/PersonalProjects/TitanicSur
 #Remove Survived column from x axis training data
 y_train = train_dataf['Survived']
 
-#Need to create larger groupings for Age and Fare
+#Need to fill in missing values and create ranges for Age 
 #Determine if the current fields show any correlation, if not possibly create more signifcant features
 
 
@@ -45,8 +40,27 @@ test_dataf['Embarked'] = test_dataf['Embarked'].fillna(test_dataf['Embarked'].mo
 train_dataf['Embarked'] = train_dataf['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype(int)
 test_dataf['Embarked'] = test_dataf['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype(int)
 
-train_dataf = train_dataf.drop(columns = ['PassengerId', 'Survived', 'Name', 'Ticket', 'Cabin','Fare' ,'Age'])
-test_dataf = test_dataf.drop(columns = ['PassengerId','Name', 'Cabin', 'Ticket', 'Age', 'Fare'])
+train_dataf['Fare'] = train_dataf['Fare'].fillna(train_dataf['Fare'].mode()[0])
+test_dataf['Fare'] = test_dataf['Fare'].fillna(test_dataf['Fare'].mode()[0])
+
+train_dataf['FareRange'] = pd.qcut(train_dataf['Fare'], 4)
+test_dataf['FareRange'] = pd.qcut(train_dataf['Fare'], 4)
+
+train_dataf.loc[train_dataf['Fare'] <= 7.91, 'Fare'] = 0
+train_dataf.loc[(train_dataf['Fare'] > 7.91) & (train_dataf['Fare'] <= 12.454), 'Fare'] = 1
+train_dataf.loc[(train_dataf['Fare'] > 14.454) & (train_dataf['Fare'] <= 31.0), 'Fare'] = 2
+train_dataf.loc[(train_dataf['Fare'] > 31.0) , 'Fare'] = 3
+train_dataf['Fare'] = train_dataf['Fare'].astype(int)
+
+test_dataf.loc[test_dataf['Fare'] <= 7.91, 'Fare'] = 0
+test_dataf.loc[(test_dataf['Fare'] > 7.91) & (test_dataf['Fare'] <= 12.454), 'Fare'] = 1
+test_dataf.loc[(test_dataf['Fare'] > 14.454) & (test_dataf['Fare'] <= 31.0), 'Fare'] = 2
+test_dataf.loc[test_dataf['Fare'] > 31.0 , 'Fare'] = 3
+test_dataf['Fare'] = test_dataf['Fare'].astype(int)
+
+
+train_dataf = train_dataf.drop(columns = ['PassengerId', 'Survived', 'Name', 'Ticket', 'Cabin' ,'Age', 'FareRange'])
+test_dataf = test_dataf.drop(columns = ['PassengerId','Name', 'Cabin', 'Ticket', 'Age', 'FareRange'])
 
 
 GNaiveBayes = GaussianNB()
@@ -54,7 +68,8 @@ GNaiveBayes.fit(train_dataf, y_train)
 y_prediction = GNaiveBayes.fit(train_dataf, y_train).predict(test_dataf)
 accuracyGNB = round(GNaiveBayes.score(train_dataf, y_train)*100, 2)
 print(accuracyGNB)
-#79.01
+#77.67
+#79.01 w/out fare feature
 
 #Cabin and Age are not complete data sets
 # Age missing ~270 values, Cabin missing ~ 700 values
